@@ -20,3 +20,9 @@ class Book(Base):
     genre: Mapped[str] = mapped_column(nullable=False) 
     relese_year: Mapped[int] = mapped_column(nullable=False)  
     author: Mapped["Author"] = relationship(back_populates="book")
+    
+class User(Base):
+    __tablename__ = "user"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    firsname: Mapped[str] = mapped_column(nullable=False)
+    lastname: Mapped[str] = mapped_column(nullable=False)
