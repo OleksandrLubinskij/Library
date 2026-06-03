@@ -1,13 +1,52 @@
 from fastapi import Depends, HTTPException, APIRouter
-from app.models import Book
+from app.models import Book, Author
 from app.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.schemas import BookCreate, BookUpdate
 from typing import Optional
+import io
+import pandas as pd
+from fastapi.responses import StreamingResponse
 
 router = APIRouter()
 
+@router.get("/export")
+async def export_books_to_excel(db: Session = Depends(get_db)):
+    try:
+        stmt = select(Book).join(Book.author)
+        books = db.execute(stmt).scalars().all()
+        if not books:
+            raise HTTPException(status_code=404, detail={"message": "Books not found"})
+        data = []
+        for i, book in enumerate(books):
+            data.append({
+                "ID": book.id,
+                "Title": book.title,
+                "Genre": book.genre,
+                "Release year": book.release_year,
+                "Author": f"{book.author.lastname} {book.author.firstname}"
+            })
+        df = pd.DataFrame(data)
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            df.to_excel(writer, index=False, sheet_name="Books Catalog")
+        buffer.seek(0)
+        headers = {
+            'Content-Disposition': 'attachment; filename="books_catalog.xlsx"'
+        }
+        
+        return StreamingResponse(
+            buffer, 
+            headers=headers, 
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        db.rollback()
+        print(e)
+        raise HTTPException(status_code=500, detail={"message": f"Error during export: {e}"})
+
+    
 @router.get("/")
 async def get_books(
     title: Optional[str] = None,
