@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Вхід до бібліотеки</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
+        Вхід в систему
+      </h2>
+
+      <div
+        id="errorBlock"
+        class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm"
+      >
+        <span id="errorMessage"></span>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700"
+            >Ім'я користувача</label
+          >
+          <input
+            type="text"
+            id="username"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Пароль</label>
+          <input
+            type="password"
+            id="password"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Увійти
+        </button>
+      </form>
+    </div>
+
+    <script>
+      async function handleLogin(e) {
+        e.preventDefault(); // Залізно блокуємо перезавантаження форми
+
+        const errorBlock = document.getElementById("errorBlock");
+        const errorMessage = document.getElementById("errorMessage");
+        errorBlock.classList.add("hidden");
+
+        const usernameInput = document.getElementById("username").value;
+        const passwordInput = document.getElementById("password").value;
+
+        console.log("Відправляємо дані:", usernameInput, passwordInput);
+
+        try {
+          const response = await fetch("/user/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: usernameInput,
+              password: passwordInput,
+            }),
+          });
+
+          if (response.ok) {
+            window.location.href = "/books";
+          } else {
+            const errorData = await response.json();
+            if (Array.isArray(errorData.detail)) {
+              errorMessage.innerText = errorData.detail[0].msg;
+            } else {
+              errorMessage.innerText =
+                errorData.detail || "Невірний логін або пароль";
+            }
+            errorBlock.classList.remove("hidden");
+          }
+        } catch (error) {
+          errorMessage.innerText = "Сталася помилка з'єднання з сервером.";
+          errorBlock.classList.remove("hidden");
+        }
+      }
+    </script>
+  </body>
+</html>
