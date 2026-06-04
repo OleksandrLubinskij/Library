@@ -1,8 +1,8 @@
 from fastapi import Depends, HTTPException, APIRouter
 from app.models import Book, Author
 from app.database import get_db
-from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy.orm import Session, contains_eager
+from sqlalchemy import select, or_
 from app.schemas import BookCreate, BookUpdate
 from typing import Optional
 import io
@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/export")
 async def export_books_to_excel(db: Session = Depends(get_db)):
     try:
-        stmt = select(Book).join(Book.author)
+        stmt = select(Book).join(Book.author).options(contains_eager(Book.author))
         books = db.execute(stmt).scalars().all()
         if not books:
             raise HTTPException(status_code=404, detail={"message": "Books not found"})
@@ -50,16 +50,22 @@ async def export_books_to_excel(db: Session = Depends(get_db)):
 @router.get("/")
 async def get_books(
     title: Optional[str] = None,
-    author_id: Optional[int] = None,
+    author_name: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    stmt = select(Book)
+    stmt = select(Book).join(Book.author).options(contains_eager(Book.author))
     if title:
         stmt = stmt.where(Book.title.ilike(f"%{title}%"))
 
-    if author_id:
-        stmt = stmt.where(Book.author_id == author_id)
-    books = db.execute(stmt).scalars().all()
+    if author_name:
+        search_pattern = f"{author_name}%"
+        stmt = stmt.where(
+            or_(
+                Author.lastname.ilike(search_pattern),
+                Author.firstname.ilike(search_pattern)
+            )
+        )
+    books = db.execute(stmt).scalars().unique().all()
     return books
 
 @router.post("/create")
