@@ -8,11 +8,14 @@ from typing import Optional
 import io
 import pandas as pd
 from fastapi.responses import StreamingResponse
+from app.services import get_current_user
+from app.core.config import ADMIN
 
 router = APIRouter()
 
 @router.get("/export")
-async def export_books_to_excel(db: Session = Depends(get_db)):
+async def export_books_to_excel(db: Session = Depends(get_db),
+                      current_user: str = Depends(get_current_user)):
     try:
         stmt = select(Book).join(Book.author).options(contains_eager(Book.author))
         books = db.execute(stmt).scalars().all()
@@ -51,7 +54,8 @@ async def export_books_to_excel(db: Session = Depends(get_db)):
 async def get_books(
     title: Optional[str] = None,
     author_name: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
 ):
     stmt = select(Book).join(Book.author).options(contains_eager(Book.author))
     if title:
@@ -69,7 +73,12 @@ async def get_books(
     return books
 
 @router.post("/create")
-async def create_book(book: BookCreate, db: Session = Depends(get_db)):
+async def create_book(book: BookCreate, 
+                      db: Session = Depends(get_db),
+                      current_user: str = Depends(get_current_user)):
+    if current_user.role != ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="There are no rights for this action")
     new_book_dict = book.model_dump()
     new_book = Book(**new_book_dict)
     try:
@@ -83,7 +92,13 @@ async def create_book(book: BookCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": "Can`t add book to database"})
     
 @router.patch("/edit/{book_id}")
-async def edit_book(book: BookUpdate, book_id: int, db: Session = Depends(get_db)):
+async def edit_book(book: BookUpdate, 
+                    book_id: int, 
+                    db: Session = Depends(get_db),
+                    current_user: str = Depends(get_current_user)):
+    if current_user.role != ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="There are no rights for this action")
     book_db = db.get(Book, book_id)
     if not book_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
@@ -102,7 +117,12 @@ async def edit_book(book: BookUpdate, book_id: int, db: Session = Depends(get_db
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": "Can`t edit book to database"})
     
 @router.delete("/delete/{book_id}")
-async def delete_book(book_id: int, db: Session = Depends(get_db)):
+async def delete_book(book_id: int, 
+                      db: Session = Depends(get_db),
+                      current_user: str = Depends(get_current_user)):
+    if current_user.role != ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="There are no rights for this action")
     book = db.get(Book, book_id)
     if not book:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "Book not found"})

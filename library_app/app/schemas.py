@@ -13,10 +13,14 @@ class AuthorCreate(BaseModel):
 class UserCreate(BaseModel):
     username: str
     password: str
+    role: str = "user"
 
 class BookUpdate(BaseModel):
     title: Optional[str] = None
     genre: Optional[str] = None
     release_year: Optional[int] = None
     author_id: Optional[int] = None
-    
+
+class UserLogin(BaseModel):
+    username: str
+    password: str

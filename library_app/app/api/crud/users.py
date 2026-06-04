@@ -1,25 +1,26 @@
 from fastapi import Depends, HTTPException, APIRouter, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.models import User
 from app.schemas import UserCreate
-from app.services import get_password_hash
-from app.database import get_db
-from app.core.config import USERNAME, PASSWORD
+from app.security import get_password_hash
+from app.core.config import USERNAME, PASSWORD, ROLE
 
 router = APIRouter()
 
-def user_exists(username: str, db: Session = Depends(get_db)) -> bool:
-    user = db.get(User, username)
-    return True if user else False
+def get_user_by_username(db: Session, username: str) -> User | None:
+    stmt = select(User).where(User.username == username)
+    return db.execute(stmt).scalar_one_or_none()
 
-def create_user(user: UserCreate, db: Session = Depends(get_db)) -> None:
+def create_user(user: UserCreate, db) -> None:
     user_dict = user.model_dump()
     raw_password = user_dict.pop(PASSWORD)
     hashed_password = get_password_hash(raw_password)
 
     new_user = User(
         username = user_dict[USERNAME],
-        password = hashed_password
+        password = hashed_password,
+        role = user_dict[ROLE]
     )
     try:
         db.add(new_user)

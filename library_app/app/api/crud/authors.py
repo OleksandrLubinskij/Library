@@ -4,17 +4,25 @@ from app.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from app.schemas import AuthorCreate
-
+from app.services import get_current_user
+from app.core.config import ADMIN
 router = APIRouter()
 
 @router.get("/")
-async def get_authors(db: Session = Depends(get_db)):
+async def get_authors(db: Session = Depends(get_db),
+                      current_user: str = Depends(get_current_user)):
     stmt = select(Author)
     author = db.execute(stmt).scalars().all()
     return author
 
 @router.post("/create")
-async def create_author(author: AuthorCreate, db: Session = Depends(get_db)):
+async def create_author(author: AuthorCreate, 
+                        db: Session = Depends(get_db), 
+                        current_user: str = Depends(get_current_user)):
+    if current_user.role != ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="There are no rights for this action")
+    
     new_author_dict = author.model_dump()
     new_author = Author(**new_author_dict)
     try:
@@ -28,7 +36,12 @@ async def create_author(author: AuthorCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": "Can`t add author to database"})
     
 @router.delete("/delete/{author_id}")
-async def delete_author(author_id: int, db: Session = Depends(get_db)):
+async def delete_author(author_id: int, 
+                        db: Session = Depends(get_db),
+                        current_user: str = Depends(get_current_user)):
+    if current_user.role != ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="There are no rights for this action")
     author = db.get(Author, author_id)
     if not author:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "Author not found"})
