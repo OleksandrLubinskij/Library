@@ -1,5 +1,3 @@
-// app/static/js/books.js
-
 async function deleteBook(id) {
     if (!confirm("Ви впевнені, що хочете видалити цю книгу?")) return;
 

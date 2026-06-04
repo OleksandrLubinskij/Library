@@ -1,4 +1,5 @@
 Щоб встановити і запустити проєкт слід виконати цей список команд:
+Наступні команди виконуйте у PowerShell
 
 git clone https://github.com/OleksandrLubinskij/Library
 cd Library/library_app
@@ -7,7 +8,7 @@ venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 New-Item .env -ItemType File
 
-За допомогою осьанньої команди було створено файл .env
+За допомогою останньої команди було створено файл .env
 Відкрийте його і вствате це:
 
 SECRET_KEY=fjwfrhiofwriofwrhio

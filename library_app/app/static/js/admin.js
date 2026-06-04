@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // Перемикання вкладок
     const tabButtons = document.querySelectorAll(".tab-btn");
     const tabContents = document.querySelectorAll(".tab-content");
 
@@ -20,19 +19,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 1. ОПЕРАЦІЯ: Створення книги (Тепер із жанром та роком випуску!)
     const createBookForm = document.getElementById("create-book-form");
     if (createBookForm) {
         createBookForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             
-            // Зчитуємо дані з усіх 4-х інпутів
             const title = document.getElementById("book-title").value;
             const genre = document.getElementById("book-genre").value;
             const release_year = parseInt(document.getElementById("book-release-year").value);
             const author_id = parseInt(document.getElementById("book-author-id").value);
 
-            // Відправляємо повний об'єкт на FastAPI
             const response = await fetch("/books/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -48,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 2. ОПЕРАЦІЯ: Реєстрація нового автора
     const createAuthorForm = document.getElementById("create-author-form");
     if (createAuthorForm) {
         createAuthorForm.addEventListener("submit", async (e) => {
@@ -71,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 3. ОПЕРАЦІЯ: Завантаження даних книги для редагування
     const loadBookBtn = document.getElementById("load-book-btn");
     const updateBookForm = document.getElementById("update-book-form");
 
@@ -97,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 4. ОПЕРАЦІЯ: Оновлення даних існуючої книги
     if (updateBookForm) {
         updateBookForm.addEventListener("submit", async (e) => {
             e.preventDefault();

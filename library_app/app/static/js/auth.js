@@ -1,10 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // === БЛОК 1: ДИНАМІЧНИЙ ВХІД ТА РЕЄСТРАЦІЯ ===
-  // Отримуємо елементи універсальної форми (якщо вони є на поточній сторінці)
   const authForm = document.getElementById("authForm");
   
   if (authForm) {
-    let currentMode = "login"; // Поточний стан форми: 'login' або 'register'
+    let currentMode = "login";
 
     const pageTitle = document.getElementById("pageTitle");
     const formTitle = document.getElementById("formTitle");
@@ -15,10 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorBlock = document.getElementById("errorBlock");
     const errorMessage = document.getElementById("errorMessage");
 
-    // 1.1. Логіка перемикання інтерфейсу (Вхід <-> Реєстрація)
     if (toggleAuthModeBtn) {
       toggleAuthModeBtn.addEventListener("click", () => {
-        // Ховаємо блок помилок при зміні режиму
         errorBlock.classList.add("hidden");
 
         if (currentMode === "login") {
@@ -39,16 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 1.2. Обробка відправки (сабміту) універсальної форми
     authForm.addEventListener("submit", async (e) => {
-      e.preventDefault(); // Залізно блокуємо перезавантаження сторінки
+      e.preventDefault();
 
       errorBlock.classList.add("hidden");
 
       const usernameInput = document.getElementById("username").value.trim();
       const passwordInput = document.getElementById("password").value;
 
-      // Динамічно підставляємо потрібний ендпоінт залежно від обраного режиму
       const endpoint = currentMode === "login" ? "/user/login" : "/user/register";
 
       console.log(`[${currentMode.toUpperCase()}] Відправка запиту на: ${endpoint}`);
@@ -67,11 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           if (currentMode === "login") {
-            // Перенаправляємо на список книг у разі успішного входу
             window.location.href = "/books";
           } else {
-            // Якщо це була успішна реєстрація — повідомляємо користувача,
-            // очищуємо пароль та автоматично перемикаємо форму в режим входу
             alert("Реєстрація успішна! Тепер ви можете увійти у свій акаунт.");
             document.getElementById("password").value = "";
             if (toggleAuthModeBtn) toggleAuthModeBtn.click();
@@ -79,7 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           const errorData = await response.json();
           
-          // Валідація помилок FastAPI/Pydantic (якщо повернувся масив `detail`)
           if (Array.isArray(errorData.detail)) {
             errorMessage.innerText = errorData.detail[0].msg;
           } else {
@@ -95,9 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // === БЛОК 2: ЛОГІКА ВИХОДУ З СИСТЕМИ (LOGOUT) ===
-  // Оскільки цей скрипт підключається глобально через base.html,
-  // кнопка виходу може бути присутня на будь-якій захищеній сторінці сайту
   const logoutBtn = document.getElementById("logoutBtn");
 
   if (logoutBtn) {
@@ -113,7 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (response.ok) {
-          // Після очищення Cookies перекидаємо користувача на сторінку авторизації
           window.location.href = "/login";
         } else {
           alert("Сталася помилка при виході з системи.");

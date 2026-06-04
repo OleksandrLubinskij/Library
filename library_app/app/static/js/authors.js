@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Навішуємо слухачі подій на кнопки видалення авторів
     const deleteButtons = document.querySelectorAll(".delete-author-btn");
     
     deleteButtons.forEach(button => {
