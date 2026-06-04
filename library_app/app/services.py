@@ -7,10 +7,7 @@ from app.core.config import settings
 
 def get_current_user(access_token: str | None = Cookie(None), db: Session = Depends(get_db)):
     if not access_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not autorized"
-        )
+        return None
     try:
         payload = jwt.decode(access_token, settings.SECRET_KEY ,algorithms=[settings.ALGORITHM])
         username = payload.get("sub")

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Library Manager{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+    <nav class="bg-indigo-600 text-white shadow-md">
+      <div
+        class="container mx-auto px-4 py-3 flex justify-between items-center"
+      >
+        <a
+          href="/books"
+          class="text-xl font-bold tracking-wider hover:text-indigo-200 transition"
+        >
+          Library
+        </a>
+
+        <div class="flex items-center space-x-6 font-medium">
+          <a href="/books" class="hover:text-indigo-200 transition">Книги</a>
+          <a href="/authors" class="hover:text-indigo-200 transition">Автори</a>
+          {% if user and user.role == "admin"%}
+          <a href="/admin" class="hover:text-indigo-200 transition"
+            >Адмін-панель</a
+          >
+          {% endif %} {% if user %}
+          <span class="text-indigo-200 text-sm italic"
+            >Привіт, {{ user.username }}!</span
+          >
+          <a
+            href="#"
+            id="logoutBtn"
+            class="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+          >
+            Вийти
+          </a>
+          {% else %}
+          <a
+            href="/login"
+            class="bg-white text-indigo-600 hover:bg-indigo-50 px-4 py-1.5 rounded-lg text-sm font-semibold transition shadow"
+          >
+            Увійти
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8 flex-grow">
+      {% block content %} {% endblock %}
+    </main>
+  </body>
+  <script src="/static/js/auth.js"></script>
+</html>

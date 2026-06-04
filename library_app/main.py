@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles  # <-- Перевір цей імпорт!
+from fastapi.staticfiles import StaticFiles
 from app.routers import endpoints, views
 
 app = FastAPI()

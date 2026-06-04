@@ -1,0 +1,106 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mx-auto p-6 max-w-6xl">
+  <div
+    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b pb-4"
+  >
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+        Каталог книг
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Керування та перегляд доступних книг у бібліотеці
+      </p>
+    </div>
+
+    <a
+      href="/books/export"
+      class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition-all duration-200 text-sm"
+    >
+      Експорт в Excel
+    </a>
+  </div>
+
+  <form
+    method="get"
+    class="flex flex-col sm:flex-row gap-3 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm"
+  >
+    <div class="flex-1">
+      <input
+        type="text"
+        name="title"
+        value="{{ request.query_params.get('title', '') }}"
+        placeholder="Пошук за назвою..."
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+    <div class="flex-1">
+      <input
+        type="text"
+        name="author_name"
+        value="{{ request.query_params.get('author_name', '') }}"
+        placeholder="Пошук за автором..."
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+    <button
+      type="submit"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg text-sm transition-colors shadow-sm"
+    >
+      Шукати
+    </button>
+  </form>
+
+  <div
+    id="books-grid"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+  >
+    {% for book in books %}
+    <div
+      id="book-{{ book.id }}"
+      class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+    >
+      <div>
+        <h2 class="text-xl font-bold text-gray-800 mb-2 line-clamp-2">
+          {{ book.title }}
+        </h2>
+        <div class="space-y-1 text-sm text-gray-600">
+          <p>
+            <span class="font-medium text-gray-500">Автор:</span> {{
+            book.author.firstname }} {{ book.author.lastname }}
+          </p>
+          <p>
+            <span class="font-medium text-gray-500">Жанр:</span> {{ book.genre
+            }}
+          </p>
+          <p>
+            <span class="font-medium text-gray-500">Рік:</span> {{
+            book.release_year }}
+          </p>
+        </div>
+      </div>
+
+      {% if user and user.role == 'admin' %}
+      <div class="mt-4 pt-3 border-t border-gray-100">
+        <button
+          onclick="deleteBook('{{ book.id }}')"
+          class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-medium px-4 py-2 rounded-lg text-sm transition-colors"
+        >
+          Видалити книгу
+        </button>
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div
+      class="col-span-full text-center py-12 bg-gray-50 rounded-xl border border-dashed"
+    >
+      <p class="text-gray-500 text-lg">
+        Книг не знайдено за вказаними фільтрами.
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="{{ url_for('static', path='js/books.js') }}"></script>
+{% endblock %}

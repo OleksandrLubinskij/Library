@@ -25,7 +25,7 @@ async def register_user(user_data: UserCreate, db: Session = Depends(get_db)) ->
 
 @router.get("/get")
 async def get_users(db: Session = Depends(get_db),
-                    current_user: str = Depends(get_current_user)) -> dict:
+                    current_user: str = Depends(get_current_user)):
     if current_user.role != ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="There are no rights for this action")
@@ -62,6 +62,6 @@ async def login(response: Response, user_info: UserLogin, db: Session = Depends(
     return {"message": "Successful login"}
 
 @router.post("/logout")
-async def logout(response: Response) -> dict:
+async def logout(response: Response):
     response.delete_cookie(key="access_token")
-    return {"message": "Successful logout"}
+    return {"status": "success", "message": "Logged out successfully"}

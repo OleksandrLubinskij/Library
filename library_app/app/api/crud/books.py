@@ -49,13 +49,21 @@ async def export_books_to_excel(db: Session = Depends(get_db),
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": f"Error during export: {e}"})
 
+def get_book_by_id(db: Session, book_id: int):
+    stmt = select(Book).where(Book.id == book_id)
+    return db.execute(stmt).scalar_one_or_none()
+
+@router.get("/book_by_id/{book_id}")
+async def book_by_id(book_id: int,
+            db: Session = Depends(get_db),
+            current_user: str = Depends(get_current_user),):
+    return get_book_by_id(db=db,book_id=book_id)
+
+def get_all_books(
+        db,
+        title: Optional[str] = None,
+        author_name: Optional[str] = None,
     
-@router.get("/")
-async def get_books(
-    title: Optional[str] = None,
-    author_name: Optional[str] = None,
-    db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user)
 ):
     stmt = select(Book).join(Book.author).options(contains_eager(Book.author))
     if title:
@@ -71,6 +79,14 @@ async def get_books(
         )
     books = db.execute(stmt).scalars().unique().all()
     return books
+    
+@router.get("/")
+async def get_books(db: Session = Depends(get_db),
+            current_user: str = Depends(get_current_user),
+            title: Optional[str] = None,
+            author_name: Optional[str] = None,):
+    return get_all_books(db=db, title=title, author_name=author_name)
+    
 
 @router.post("/create")
 async def create_book(book: BookCreate, 

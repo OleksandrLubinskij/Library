@@ -8,12 +8,15 @@ from app.services import get_current_user
 from app.core.config import ADMIN
 router = APIRouter()
 
-@router.get("/")
-async def get_authors(db: Session = Depends(get_db),
-                      current_user: str = Depends(get_current_user)):
+def get_all_authors(db):
     stmt = select(Author)
     author = db.execute(stmt).scalars().all()
     return author
+
+@router.get("/")
+async def get_authors(db: Session = Depends(get_db),
+                      current_user: str = Depends(get_current_user)):
+    return get_all_authors(db)
 
 @router.post("/create")
 async def create_author(author: AuthorCreate, 
