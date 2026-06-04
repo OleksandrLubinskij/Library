@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, status
 from app.models import Book, Author
 from app.database import get_db
 from sqlalchemy.orm import Session, contains_eager
@@ -17,7 +17,7 @@ async def export_books_to_excel(db: Session = Depends(get_db)):
         stmt = select(Book).join(Book.author).options(contains_eager(Book.author))
         books = db.execute(stmt).scalars().all()
         if not books:
-            raise HTTPException(status_code=404, detail={"message": "Books not found"})
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "Books not found"})
         data = []
         for i, book in enumerate(books):
             data.append({
@@ -44,7 +44,7 @@ async def export_books_to_excel(db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         print(e)
-        raise HTTPException(status_code=500, detail={"message": f"Error during export: {e}"})
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": f"Error during export: {e}"})
 
     
 @router.get("/")
@@ -80,13 +80,13 @@ async def create_book(book: BookCreate, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         print(e)
-        raise HTTPException(status_code=500, detail={"message": "Can`t add book to database"})
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": "Can`t add book to database"})
     
 @router.patch("/edit/{book_id}")
 async def edit_book(book: BookUpdate, book_id: int, db: Session = Depends(get_db)):
     book_db = db.get(Book, book_id)
     if not book_db:
-        raise HTTPException(status_code=404, detail="Book not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
     
     update_data = book.model_dump(exclude_unset=True)
     try:
@@ -99,13 +99,13 @@ async def edit_book(book: BookUpdate, book_id: int, db: Session = Depends(get_db
     except Exception as e:
         db.rollback()
         print(e)
-        raise HTTPException(status_code=500, detail={"message": "Can`t edit book to database"})
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": "Can`t edit book to database"})
     
 @router.delete("/delete/{book_id}")
 async def delete_book(book_id: int, db: Session = Depends(get_db)):
     book = db.get(Book, book_id)
     if not book:
-        raise HTTPException(status_code=404, detail={"message": "Book not found"})
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "Book not found"})
     
     try:
         db.delete(book)
@@ -113,5 +113,5 @@ async def delete_book(book_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         print(e)
-        raise HTTPException(status_code=500, detail={"message": "Can`t delete book from database"})
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"message": "Can`t delete book from database"})
 
