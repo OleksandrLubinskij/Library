@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteButtons.forEach(button => {
         button.addEventListener("click", async (event) => {
             const authorId = event.target.getAttribute("data-author-id");
-            
+            console.log(authorId)
             if (!confirm("УВАГА! Видалення автора призведе до каскадного видалення ВСІХ його книг за ТЗ. Продовжити?")) {
                 return;
             }
             
             try {
-                const response = await fetch(`/api/authors/${authorId}`, {
+                const response = await fetch(`/authors/delete/${authorId}`, {
                     method: 'DELETE'
                 });
                 

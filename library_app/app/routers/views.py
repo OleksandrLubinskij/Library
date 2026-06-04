@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.services import get_current_user
+from app.services import get_current_user_or_redirect
 from fastapi import Depends, APIRouter
 from app.api.crud.books import get_all_books
 from app.api.crud.authors import get_all_authors
@@ -25,7 +25,7 @@ async def books_page(
     title: str = None,
     author_name: str = None,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user) 
+    current_user = Depends(get_current_user_or_redirect) 
 ):
     if not current_user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
@@ -40,7 +40,7 @@ async def books_page(
 async def author_page(
     request: Request,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user) 
+    current_user = Depends(get_current_user_or_redirect) 
 ):
     if not current_user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
@@ -52,7 +52,7 @@ async def author_page(
 )
 
 @router.get("/admin", response_class=HTMLResponse)
-async def get_admin_panel(request: Request, current_user: dict = Depends(get_current_user)):
+async def get_admin_panel(request: Request, current_user: dict = Depends(get_current_user_or_redirect)):
     if not current_user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     

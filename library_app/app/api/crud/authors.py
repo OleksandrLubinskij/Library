@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, APIRouter, status
-from app.models import Author
+from app.models import Author, User
 from app.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -15,13 +15,13 @@ def get_all_authors(db):
 
 @router.get("/")
 async def get_authors(db: Session = Depends(get_db),
-                      current_user: str = Depends(get_current_user)):
+                      current_user: User = Depends(get_current_user)):
     return get_all_authors(db)
 
 @router.post("/create")
 async def create_author(author: AuthorCreate, 
                         db: Session = Depends(get_db), 
-                        current_user: str = Depends(get_current_user)):
+                        current_user: User = Depends(get_current_user)):
     if current_user.role != ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="There are no rights for this action")
@@ -41,7 +41,7 @@ async def create_author(author: AuthorCreate,
 @router.delete("/delete/{author_id}")
 async def delete_author(author_id: int, 
                         db: Session = Depends(get_db),
-                        current_user: str = Depends(get_current_user)):
+                        current_user: User = Depends(get_current_user)):
     if current_user.role != ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="There are no rights for this action")

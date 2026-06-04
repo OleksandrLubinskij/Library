@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, APIRouter, status
-from app.models import Book, Author
+from app.models import Book, Author, User
 from app.database import get_db
 from sqlalchemy.orm import Session, contains_eager
 from sqlalchemy import select, or_
@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get("/export")
 async def export_books_to_excel(db: Session = Depends(get_db),
-                      current_user: str = Depends(get_current_user)):
+                      current_user: User = Depends(get_current_user)):
     try:
         stmt = select(Book).join(Book.author).options(contains_eager(Book.author))
         books = db.execute(stmt).scalars().all()
@@ -56,7 +56,7 @@ def get_book_by_id(db: Session, book_id: int):
 @router.get("/book_by_id/{book_id}")
 async def book_by_id(book_id: int,
             db: Session = Depends(get_db),
-            current_user: str = Depends(get_current_user),):
+            current_user: User = Depends(get_current_user),):
     return get_book_by_id(db=db,book_id=book_id)
 
 def get_all_books(
@@ -82,7 +82,7 @@ def get_all_books(
     
 @router.get("/")
 async def get_books(db: Session = Depends(get_db),
-            current_user: str = Depends(get_current_user),
+            current_user: User = Depends(get_current_user),
             title: Optional[str] = None,
             author_name: Optional[str] = None,):
     return get_all_books(db=db, title=title, author_name=author_name)
@@ -91,7 +91,7 @@ async def get_books(db: Session = Depends(get_db),
 @router.post("/create")
 async def create_book(book: BookCreate, 
                       db: Session = Depends(get_db),
-                      current_user: str = Depends(get_current_user)):
+                      current_user: User = Depends(get_current_user)):
     if current_user.role != ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="There are no rights for this action")
@@ -111,7 +111,7 @@ async def create_book(book: BookCreate,
 async def edit_book(book: BookUpdate, 
                     book_id: int, 
                     db: Session = Depends(get_db),
-                    current_user: str = Depends(get_current_user)):
+                    current_user: User = Depends(get_current_user)):
     if current_user.role != ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="There are no rights for this action")
@@ -135,7 +135,7 @@ async def edit_book(book: BookUpdate,
 @router.delete("/delete/{book_id}")
 async def delete_book(book_id: int, 
                       db: Session = Depends(get_db),
-                      current_user: str = Depends(get_current_user)):
+                      current_user: User = Depends(get_current_user)):
     if current_user.role != ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="There are no rights for this action")
